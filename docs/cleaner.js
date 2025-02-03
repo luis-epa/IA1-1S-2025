@@ -1,7 +1,7 @@
 const logElement = document.querySelector("#log");
 
 /**
- * Estado actual del sistema
+ * Estado actual del sistema.
  */
 let states = [];
 
@@ -26,7 +26,7 @@ const allStates = [
  */
 const writeHTMLAction = (prevState, location, action) => {
   logElement.innerHTML += `
-  <br>Loc: ${prevState[0]}, StatusA: ${prevState[1]}, StatusB: ${prevState[2]}
+  <br>[Loc: ${prevState[0]}, StatusA: ${prevState[1]}, StatusB: ${prevState[2]}]
   <br>&emsp;<strong>Location: ${location} | Action: ${action}</strong>
   `;
 };
@@ -50,9 +50,10 @@ const getRandomState = () => {
  * @param {string[]} state
  * @param {string[]} visitedStates
  * @returns
+ *
  */
 const hasBeenVisited = (state, visitedStates) => {
-  console.log(visitedStates);
+  // console.log(visitedStates);
   return visitedStates.some(
     (visitedState) =>
       visitedState[0] === state[0] &&
@@ -69,13 +70,13 @@ const dirtyRoom = () => {
   // Ensuciar la ubicación A
   if (Math.random() < 0.5) {
     states[1] = "DIRTY";
-    dirtyRooms += `<br><em>&emsp;Se ensucia ubicación A</em>`;
+    dirtyRooms += `<br><em>&emsp;&emsp;Se ensucia ubicación A</em>`;
   }
 
   // Ensuciar la ubicación B
   if (Math.random() < 0.5) {
     states[2] = "DIRTY";
-    dirtyRooms += `<br><em>&emsp;Se ensucia ubicación B</em>`;
+    dirtyRooms += `<br><em>&emsp;&emsp;Se ensucia ubicación B</em>`;
   }
 
   logElement.innerHTML += dirtyRooms;
@@ -93,13 +94,12 @@ function reflexAgent(location, state) {
   else if (location == "B") return "LEFT";
 }
 
+/**
+ * Ejecuta la simulación.
+ */
 const simulate = () => {
-  // Obtiene el estado inicial
   const curState = getRandomState();
 
-  console.log(curState);
-
-  // Inicializa la lista de estados faltantes, quitando el estado inicial
   let remainingStates = allStates.filter(
     (remState) =>
       !(
@@ -111,20 +111,13 @@ const simulate = () => {
 
   states = [...curState];
 
-  console.log(states);
-
-  // Crear y agrega el estado inicial a la lista de estados visitados
   let visitedStates = [curState];
 
-  // Repite hasta visitar los 8 estados
-  while (visitedStates.length < 8) {
-    // Obtiene la ubicación actual y los estados de las ubicaciones
+  const simulateStep = () => {
+    if (visitedStates.length >= 8) return; // Terminar cuando se han visitado todos los estados
+
     const [loc, statusA, statusB] = states;
-
-    console.log(loc);
-
     const action = reflexAgent(loc, loc === "A" ? statusA : statusB);
-
     const prevState = [...states];
 
     writeHTMLAction(prevState, loc, action);
@@ -138,13 +131,10 @@ const simulate = () => {
       states[0] = "B";
     }
 
-    // Simular que las ubicaciones se ensucien
     dirtyRoom();
 
-    // Marcar el estado como visitado
     if (!hasBeenVisited(prevState, visitedStates)) {
       visitedStates.push([...prevState]);
-
       remainingStates = remainingStates.filter(
         (remState) =>
           !(
@@ -154,7 +144,12 @@ const simulate = () => {
           )
       );
     }
-  }
+
+    setTimeout(simulateStep, 600);
+  };
+
+  // Llamar a la primera iteración
+  simulateStep();
 };
 
 simulate();
